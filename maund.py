@@ -1,7 +1,12 @@
-import time
+#!/usr/bin/env python
+
 import argparse
 import logging
+import time
 import uuid
+
+from pathlib import Path
+
 
 import pandas as pd
 import numpy as np
@@ -63,6 +68,7 @@ parser.add_argument('-e','--window_end', type=int, default=7)
 parser.add_argument('-ib','--idxseq_beg', type=int, default=13)
 parser.add_argument('-ie','--idxseq_end', type=int, default=22)
 parser.add_argument('-t','--target_nt',  default='A', choices=['A','C','G','T'])
+parser.add_argument('-mcut','--mismatch_cutoff', type=int, default=4)
 args = parser.parse_args()
 
 t1=time.time()
@@ -76,15 +82,19 @@ i_idxseq_beg = args.idxseq_beg - 1
 i_idxseq_end = args.idxseq_end
 nt_target    = args.target_nt
 
+mismatch_cutoff = args.mismatch_cutoff
+
 len_rgen = len(RGEN_seq)
 idx_cleavage = len_rgen-6
 len_crange = args.comparison_range
 filt_n = 1                                       # cutoff for count number
 len_indicator_seq = 15
 
-for file_name in f_input:
+for file_path in f_input:
+    file_path = Path(file_path).resolve()
+    file_name = file_path.name
     logger.info("Begin: {} with {}".format(file_name, RGEN_seq))
-    out_name= '{}.{}.out.'.format(file_name,RGEN_seq)
+    out_name= '{}.{}.maund.out.'.format(file_name,RGEN_seq)
         
     i_for =seq_wt.find(RGEN_seq)
     i_rev = seq_wt.find(revertedSeq(RGEN_seq))
@@ -115,7 +125,7 @@ for file_name in f_input:
     logger.info("Is reverted match? : {}".format(is_rev_match))
     logger.info("Use amplicon[{}:{}] as comparison range".format(start_pos,end_pos))
     ###################################################  0
-    with open(file_name, "r") as f1 :
+    with file_path.open("r") as f1 :
         s1 = f1.read().splitlines()
     # Get seqence lines
     seq_lines = s1[1::4]
@@ -125,8 +135,8 @@ for file_name in f_input:
     df_z2=df_z1[-df_z1.frag.str.contains(s_N)].copy()
     df_z2['i_beg']=df_z2.frag.apply(lambda x : matchUpto1(pri_for,x))
     tmp = df_z2[df_z2.i_beg!=-1].copy()
-    tmp['i_end']=tmp.frag.apply(lambda x : matchUpto1(pri_back,x))+len(pri_back)
-    df_z3 = tmp[(tmp.i_end!=-1)&(tmp.i_beg<tmp.i_end)].apply(lambda x : x.frag[x.i_beg:x.i_end], axis=1).copy()
+    tmp['i_end']=tmp.frag.apply(lambda x : matchUpto1(pri_back,x))
+    df_z3 = tmp[tmp.i_beg<tmp.i_end].apply(lambda x : x.frag[x.i_beg:x.i_end+len(pri_back)], axis=1).copy()
     df_z4 = df_z3.value_counts()
     
     #write_to_tsv(df_z1, out_name+"z1_M1.fastq.txt")
@@ -218,7 +228,7 @@ for file_name in f_input:
     #fineMatch : edit distance to target sequence is less than cutoff
     #well-aligned : no indel and find match to target sequence.
     noIndelInTargetSeqRegion = lambda ops : 0 == len([op for op in ops if op[0]!='replace' and rgen_cridx_beg<=op[1] and op[1]<rgen_cridx_end])
-    isFineMatch = lambda ops : len([op for op in ops if rgen_cridx_beg<=op[1] and op[1]<rgen_cridx_end])<4
+    isFineMatch = lambda ops : len([op for op in ops if rgen_cridx_beg<=op[1] and op[1]<rgen_cridx_end]) < mismatch_cutoff
     
     def findIdx(editops, idx):
         ins  = [op for op in editops if op[0]=='insert' and op[1]<idx]
@@ -260,7 +270,7 @@ for file_name in f_input:
         tr_beg = i_rgen
         tr_end = i_rgen + len(s_seq)
         df_wellAligned['targetRegion']=df_wellAligned.apply(lambda x : x.seq[findIdx(x.editops,tr_beg):findIdx(x.editops,tr_end)], axis=1)
-        counts = countPerLocation2(df_wellAligned, s_seq)
+        counts = countPerLocation2(df_wellAligned[df_wellAligned.targetRegion.str.len()==len(RGEN_seq)], s_seq)
         n_total = df_wellAligned.n_seq.sum()
         counts=pd.concat([pd.DataFrame(list(s_seq),columns=['target_seq']),counts,counts/n_total],axis=1).round(4)
         cols_out     = "target_seq No_A No_C No_G No_T No_Non_Target ratio_A ratio_C ratio_G ratio_T ratio_non_target".split()
