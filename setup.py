@@ -4,6 +4,7 @@ setup(
     scripts=[
         'bin/maund.py',
     ],
+    packages=find_packages(exclude=['bin']),
     install_requires=[
         "pandas",
         "python-Levenshtein",

@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 import argparse
 import logging
 import uuid
 
-from libmaund import run_maund
+from . import run_maund
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
