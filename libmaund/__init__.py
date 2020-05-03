@@ -78,6 +78,7 @@ def run_maund(args, logger):
     i_idxseq_end = args.idxseq_end
     nt_target    = args.target_nt
     target_name = args.target_name if args.target_name else RGEN_seq
+    output_nametag = = args.output_nametag
 
     mismatch_cutoff = args.mismatch_cutoff
 
@@ -91,7 +92,8 @@ def run_maund(args, logger):
         file_path = Path(file_path).resolve()
         file_name = file_path.name
         logger.info("Begin: {} with {}".format(file_name, RGEN_seq))
-        out_name= '{}.{}.maund.out.'.format(file_name, target_name)
+        out_name= '{}.{}.maund.{}.'.format(file_name, target_name, output_nametag)
+        
             
         i_for =seq_wt.find(RGEN_seq)
         i_rev = seq_wt.find(revertedSeq(RGEN_seq))

@@ -26,6 +26,7 @@ parser.add_argument('-ie','--idxseq_end', type=int, default=22)
 parser.add_argument('-t','--target_nt',  default='A', choices=['A','C','G','T'])
 parser.add_argument('-mcut','--mismatch_cutoff', type=int, default=4)
 parser.add_argument('-name','--target_name', type=str, default=None)
+parser.add_argument('-otag','--output_nametag', type=str, default='out')
 args = parser.parse_args()
 
 if __name__=='__main__':
