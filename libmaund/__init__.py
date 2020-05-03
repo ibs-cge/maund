@@ -78,7 +78,7 @@ def run_maund(args, logger):
     i_idxseq_end = args.idxseq_end
     nt_target    = args.target_nt
     target_name = args.target_name if args.target_name else RGEN_seq
-    output_nametag = = args.output_nametag
+    output_nametag = args.output_nametag
 
     mismatch_cutoff = args.mismatch_cutoff
 
