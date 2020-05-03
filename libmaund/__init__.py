@@ -223,7 +223,19 @@ def run_maund(args, logger):
 		else:
 		    w_beg = i_rgen + i_window_beg
 		    w_end = i_rgen + i_window_end
-		logger.info("{} base editing in window : comparison_range[{}:{}] = {}".format(nt_target,w_beg,w_end,seq_range[w_beg:w_end]))
+		    
+        ttmp = seq_range[i_rgen:i_rgen + len_rgen]
+        if is_rev_match:
+            ttmp = revertedSeq(ttmp)
+        assert (ttmp == RGEN_seq)
+        rgen_window = seq_range[w_beg:w_end]
+        if is_rev_match:
+            rgen_window = revertedSeq(rgen_window)
+        if i_window_end < len(RGEN_seq):
+            logger.info("Check rgen_window validity.")
+            assert (rgen_window == RGEN_seq[i_window_beg:i_window_end])  # for normal cases
+        logger.info("{} base editing in window : comparison_range[{}:{}] = {}".format(nt_target,w_beg,w_end,rgen_window))
+		
 		if df_wellAligned.empty :
 		    logger.info("No well-aligned case. Skip to generate _window and _aligned")
 		    n_total = 0
@@ -236,7 +248,6 @@ def run_maund(args, logger):
 		        df_Win.window=df_Win.window.apply(revertedSeq)
 		    df_Win.to_csv(output_window,sep='\t',index=False)
 		
-		    rgen_window = RGEN_seq[i_window_beg:i_window_end]
 		    n_mutated = col_sum(df_Win[df_Win.window.apply(lambda x : hasReplacement(nt_target,rgen_window,x))].n_seq)
 		    n_total   = col_sum(df_Win.n_seq)
 		    mutation_ratio = n_mutated/n_total
