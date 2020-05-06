@@ -89,10 +89,13 @@ def run_maund(args, logger):
     len_indicator_seq = 15
 
     for file_path in f_input:
-        file_path = Path(file_path).resolve()
+        file_path = Path(file_path)#.resolve()
+        base_dir =  file_path.parent
         file_name = file_path.name
         logger.info("Begin: {} with {}".format(file_name, RGEN_seq))
         out_name= '{}.{}.maund.{}.'.format(file_name, target_name, output_nametag)
+        if str(base_dir) != ".":
+            out_name= '{}.{}.{}.maund.{}.'.format(base_dir, file_name, target_name, output_nametag)
         
             
         i_for =seq_wt.find(RGEN_seq)
