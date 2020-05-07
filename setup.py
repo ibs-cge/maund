@@ -9,7 +9,7 @@ setup(
         "pandas",
         "python-Levenshtein",
     ],
-    version = "0.3.4.2",
+    version = "0.4.0.0",
     description = "Miseq analysis program",
     )
 
