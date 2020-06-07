@@ -10,7 +10,10 @@ import Levenshtein as ed
 
 write_to_tsv = lambda df, output : df.to_csv(output,header=False,index=False,sep='\t')
 toCharArray = lambda seq : np.array([seq]).astype('S').view('S1')
-revertedSeq = lambda seq : seq.translate(str.maketrans("ATGC", "TACG"))[::-1]
+
+trans=str.maketrans("ATGC", "TACG")
+revertedSeq = lambda seq : seq.translate(trans)[::-1]
+
 def mismatch(seq1,seq2):
     n = min(len(seq1),len(seq2))
     m = max(len(seq1),len(seq2))
@@ -130,7 +133,9 @@ def run_maund(args, logger):
         with file_path.open("r") as f1 :
             s1 = f1.read().splitlines()
         # Get seqence lines
-        seq_lines = s1[1::4]
+        seq_lines_fwd = s1[1::4]
+        seq_lines_rev = [revertedSeq(x) for x in seq_lines_fwd]
+        seq_lines = seq_lines_fwd + seq_lines_rev
         s_N = 'N'
         
         df_z1=pd.DataFrame(seq_lines, columns=['frag'])
