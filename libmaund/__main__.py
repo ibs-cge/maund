@@ -27,6 +27,14 @@ parser.add_argument('-t','--target_nt',  default='A', choices=['A','C','G','T'])
 parser.add_argument('-mcut','--mismatch_cutoff', type=int, default=4)
 parser.add_argument('-name','--target_name', type=str, default=None)
 parser.add_argument('-otag','--output_nametag', type=str, default='out')
+feature_parser = parser.add_mutually_exclusive_group(required=False)
+feature_parser.add_argument('--reverse_complement_match', dest='reverse_complement_match', action='store_true',
+                            help="Include NGS reads with reverse-complement match to the input amplicon sequence")
+feature_parser.add_argument('--no_reverse_complement_match', dest='reverse_complement_match', action='store_false',
+                            help="Exclude NGS reads with reverse-complement match to the input amplicon sequence")
+parser.set_defaults(reverse_complement_match=True)
+
+
 args = parser.parse_args()
 
 if __name__=='__main__':

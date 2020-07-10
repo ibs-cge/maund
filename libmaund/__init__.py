@@ -134,10 +134,16 @@ def run_maund(args, logger):
             s1 = f1.read().splitlines()
         # Get seqence lines
         seq_lines_fwd = s1[1::4]
-        seq_lines_rev = [revertedSeq(x) for x in seq_lines_fwd]
-        seq_lines = seq_lines_fwd + seq_lines_rev
-        s_N = 'N'
         
+        if args.reverse_complement_match:
+            seq_lines_rev = [revertedSeq(x) for x in seq_lines_fwd]
+            seq_lines = seq_lines_fwd + seq_lines_rev
+            logger.info("Include NGS reads with reverse-complement match to the amplicon sequence")
+        else:
+            seq_lines = seq_lines_fwd
+            logger.info("Exclude NGS reads with reverse-complement match to the amplicon sequence")
+            
+        s_N = 'N'                
         df_z1=pd.DataFrame(seq_lines, columns=['frag'])
         df_z2=df_z1[-df_z1.frag.str.contains(s_N)].copy()
         df_z2['i_beg']=df_z2.frag.apply(lambda x : matchUpto1(pri_for,x))
